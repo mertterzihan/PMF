@@ -6,6 +6,8 @@
 \usepackage{graphicx,float,wrapfig}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{natbib}
+\usepackage{bibhacks}
 %\documentstyle[nips13submit_09,times,art10]{article} % For LaTeX 2.09
 
 
@@ -51,26 +53,29 @@ filtering and recommendation systems. With the rise of data available to
 researchers and the requirement to present personalized ads or recommendations 
 to users led the researchers to further study of this field. As our final 
 project, we will be dealing with Probabilistic Matrix Factorization on 
-matrices with discrete values. 
+matrices with discrete values. In particular we will apply these methods to analyze the movie-user review data in the MovieLens 100k dataset \cite{movielens100k}.
 
 
 \section{Discussion of Related Work}
 \label{work}
-As studied in [1] and [2], one can observe that LDA is equivalent to factorize a matrix 
+As studied in \cite{lda} and \cite{discrete-pca}, one can observe that LDA is equivalent to factorizing a matrix 
 probabistically using a graphical model representation. Instead of dealing with 
-co-occurence matrix, we will try to propose a model and a learning algorithm to 
+a co-occurence matrix, we will try to propose a model and a learning algorithm to 
 factorize a matrix where each cell is a rating of an item by a particular user. 
-Therefore additional to LDA, we would also like to generate ratings that have been 
+Therefore, in addition to LDA, we would also like to generate ratings that have been 
 assigned by users to each item. 
 
-[4] proposes a method based on LDA to produce personalized recommendations. 
-However, fLDA takes into account many more information about the user, i.e. age, 
-gender, zipcode, etc. We are going to use a simpler model, using only the rates 
-that have been given by the users to specific items. 
+In \cite{Argwal-fDLA} a method based on LDA is proposed to produce personalized recommendations.
+However, fLDA takes into account much more information about the user, i.e. age, 
+gender, zipcode, etc. We are going to use a simpler model, which relies on
+much less personal information. We will be using only the ratings 
+that have been given by the users to specific items.
 
-[6] has proposed an LDA-based probabilistic matrix factorization model, however 
-instead of using discrete distribution for generating ratings, it has placed a 
-Gaussian distribution. 
+A LDA-based probabilistic matrix factorization models is proposed in
+\cite{conf/icdm/ShanB10}, however instead of using discrete distribution
+for generating ratings, it has placed a Gaussian distribution over the user's
+ratings. In our investigation we hope to relax this assumption and look into
+models that are not necessarily Gaussian.
 
 \section{Graphical Model}
 \label{graph}
@@ -96,46 +101,53 @@ and $T$ is the number of topics that we would like to extract.
 
 \section{Preliminary Experiment}
 \label{exp}
-[5]
+In our preliminary experiment we will be analyzing the data in the MovieLens 100k
+dataset \cite{movielens100k}. This dataset contains 100,000 ratings from 1,000
+users on 1,700 movies. It is a well studied dataset for which we should be able
+to obtain clean and comparable results. Our goal is to use LDA or a similar
+algorithm to discover latent genres among the movies. As mentioned earlier,
+since we will be using a generative model, we will also be able to generate
+ratings for movies that users have not yet rated.
+
+\cite{kermarrec:hal-00673330}
 
 \section{Learning Algorithm}
 \label{alg}
-MCMC and/or Variational Inference
-Two ways to deal with incomplete data: 
-\begin{itemize}
-	\item 1) First complete the matrix and then factorize it
-	\item 2) Operate on incomplete data likelihood as discussed in [3]
-\end{itemize}
+Because we are trying to discover hidden (latent) variables among incomplete data we will be using either MCMC or Variational Inference methods to perform learning. Generally speaking, our approach can be broken into two steps:
+\begin{enumerate}
+	\item First complete the matrix and then factorize it
+	\item Operate on incomplete data likelihood as discussed in \cite{Dempster77maximumlikelihood}
+\end{enumerate}
 
 \section{Evaluation}
 \label{eval}
+Because we will be using a generative model we can partition our dataset into
+training and testing parts. This will allow us to evaluate the reviews generated
+for movie-user pairs in the test set. We can use widely adopted metrics such
+as precision and recall to our model's effectiveness. In addition, because
+the MovieLens dataset is widely used we will be able to compare our performance
+against state of the art techniques.
+
+Finally, to test the creation of the latent genres we can obtain expert defined
+genres for a subset of the movies in the dataset. We can then use a metric to
+analyze the distance between the predicted and expert defined genres.
 
 \section{Timeline}
 \label{time}
 
-\subsubsection*{References}
-
-\small{
-[1] Blei, D.M., Ng, A.Y., and Jordan, M.I. Latent Dirichlet Allocation. In 
-\textit{Journal of Machine Learning Research}, No. 2, pages 993-1022, March 2003. 
-
-[2] Buntine, W., and Jakulin, A. Applying Discrete PCA in Data Analysis. In 
-\textit{The Conference on Uncertainty in Artificial Intelligence}, 2004.
-
-[3] Dempster, A.P., Laird, N.M., and Rubin, D.B. Maximum Likelihood from 
-Incomplete Data via the EM Algorithm. In \textit{Journal of the Royal 
-Statistical Society}, Series B, Vol. 39, No. 1, pages 1-38, 1977.
-
-[4] Agarwal, D, and Chen, B. fLDA: Matrix Factorization through Latent Dirichlet 
-Allocation. In \textit{The International Conference on Web Search and Data 
-Mining}, 2010. 
-
-[5] Kermarrec, A., and Moin, A. Data Visualization Via Collaborative Filtering. 
-\textit{Research Report}, 2012, pp.23.
-
-[6] Shan, H., and Banerjee, A. Generalized Probabilistic Matrix Factorizations for 
-Collaborative Filtering. In \textit{IEEE International Conference on Data 
-Mining}, 2010. 
-}
+\begin{description}
+	\item[11/16] Models and datasets finalized and any additional
+			related work identified.
+	\item[11/21] Initial results for MovieLens dataset collected.
+	\item[11/25] Comparisons of results to existing baselines completed
+			for initial results.
+	\item[12/5] Finished collecting results for model(s).
+	\item[12/7] Finished evaluation and comparison to existing models.
+	\item[12/8] Project presentation completed.
+	\item[12/13] First draft of paper completed.
+	\item[12/16] Paper completed.
+\end{description}
+\bibliographystyle{plain}
+\bibliography{main}
 
 \end{document}

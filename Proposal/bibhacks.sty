@@ -1,0 +1,45 @@
+% Some conferences (e.g. NIPS and UAI) state in their style guides that the
+% references heading should be a subsubsection-level heading --- but using their
+% style file with bibtex usually ends up with a section-level heading. This hack
+% fixes that.
+% 
+% If you pass the small option then it \small's the references, which is
+% explicitly allowed by at least NIPS.
+% 
+% If you pass the tight option then the package scrunches space between the
+% references too. The allowability of this is somewhat more dubious.
+% 
+% Include this *after* natbib or any other packages that might over-ride this
+% stuff. Using one of:
+% 	\usepackage{bibhacks}
+% 	\usepackage[small]{bibhacks}
+% 	\usepackage[small,tight]{bibhacks}
+%
+% Iain Murray 2006-05-28
+\NeedsTeXFormat{LaTeX2e}[1994/12/01]
+\ProvidesPackage{bibhacks}[2006/05/28]
+
+\newif\ifbh@tight
+\DeclareOption{tight}{\bh@tighttrue}
+\newif\ifbh@small
+\DeclareOption{small}{\bh@smalltrue}
+\ProcessOptions
+
+\let\oldthebibliography=\thebibliography
+\let\endoldthebibliography=\endthebibliography
+\let\oldsection=\section
+\renewenvironment{thebibliography}[1]{%
+\renewcommand{\section}{\subsubsection}
+\begin{oldthebibliography}{#1}%
+  \ifbh@small%
+    \small%
+	\fi%
+  \ifbh@tight%
+    \setlength{\parskip}{0.05ex}%
+    \setlength{\itemsep}{0.05ex}%
+  \fi%
+}%
+{%
+  \renewcommand{\section}{\oldsection}%
+  \end{oldthebibliography}%
+}
