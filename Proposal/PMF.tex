@@ -98,6 +98,13 @@ and $T$ is the number of topics that we would like to extract.
       \label{fig:plot1}
     \end{center}
   \end{figure}
+  
+One can observe that this model resembles LDA, but with one change. We have 
+included the rates, $r_{ij}$ that are given by a user to items, $x_{ij}$. We 
+assume that each user has a different set of parameters, $\kappa_{tj}$, having a 
+Dirichlet prior, which defines the rate with the topic assignment, $z_{ji}$. 
+Note that rates are produced by a Categorical distribution with parameters, 
+$\kappa_{jt}$. 
 
 \section{Preliminary Experiment}
 \label{exp}
@@ -113,11 +120,21 @@ ratings for movies that users have not yet rated.
 
 \section{Learning Algorithm}
 \label{alg}
-Because we are trying to discover hidden (latent) variables among incomplete data we will be using either MCMC or Variational Inference methods to perform learning. Generally speaking, our approach can be broken into two steps:
+Before running any learning algorithm on a dataset with the above model, we 
+should note that the matrix may contain incomplete data, meaning that not all 
+users must rate every item out there. The classical algorithms don't deal with 
+this issue. So, we will employ one or both of below approaches:
 \begin{enumerate}
 	\item First complete the matrix and then factorize it
-	\item Operate on incomplete data likelihood as discussed in \cite{Dempster77maximumlikelihood}
+	\item Run EM algorithm and operate on incomplete data likelihood as discussed 
+	in \cite{Dempster77maximumlikelihood}
 \end{enumerate}
+
+After completing the matrix, we can use an MCMC algorithm to learn the hidden 
+parameters of our model. Among this set of algorithms, we are going to use Gibbs 
+sampler. However, if we find the mixing and convergence rate of the algorithm low, 
+then we can employ variational methods which may be a better fit to large 
+datasets. 
 
 \section{Evaluation}
 \label{eval}
