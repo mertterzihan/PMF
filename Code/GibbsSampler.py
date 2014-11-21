@@ -5,6 +5,7 @@ from parseData import create_user_movie_matrix
 from parseData import getMeta
 from random import randint, shuffle
 from itertools import izip
+import math
 
 
 class GibbsSampler(object):
@@ -15,21 +16,21 @@ class GibbsSampler(object):
         self.beta = beta
         self.gamma = gamma
 
-        info = getMeta()
+        self.info = getMeta()
 
         self.user_movies = create_user_movie_matrix()
         user_indices, movie_indices = self.user_movies.nonzero()
         self.user_movie_indices = zip(user_indices, movie_indices)
 
-        self.CountMT = np.zeros( (info["movies"], numTopics) )
-        self.CountRUT = np.zeros( (6, info["users"], numTopics) )  # ratings 1-5 and 0
-        self.CountUT = np.zeros( (info["users"], numTopics) )
-        self.topic_assignments = np.zeros((info["users"], info["movies"]))
+        self.CountMT = np.zeros( (self.info["movies"], numTopics) )
+        self.CountRUT = np.zeros( (6, self.info["users"], numTopics) )  # ratings 1-5 and 0
+        self.CountUT = np.zeros( (self.info["users"], numTopics) )
+        self.topic_assignments = np.zeros((self.info["users"], self.info["movies"]))
 
         # Normalization factors
         self.CountT = np.zeros(numTopics)
-        self.CountU = np.zeros(info["users"])
-        self.CountRU = np.zeros((6, info["users"]))
+        self.CountU = np.zeros(self.info["users"])
+        self.CountRU = np.zeros((6, self.info["users"]))
 
         for userid, movieid in self.user_movie_indices:
             topic = randint(0, numTopics - 1)
@@ -81,12 +82,51 @@ class GibbsSampler(object):
                 self.CountRU[rating, userid] += 1
 
             print "Finished iteration %d" % currIter
+            print self.logLike()
+
+    def logLike(self):
+        phi = self.calcPhi()
+        kappa = self.calcKappa()
+        ll = 0
+
+        for userid, movieid in self.user_movie_indices:
+            topic = self.topic_assignments[userid, movieid]
+            rating = self.user_movies[userid, movieid]
+            ll += math.log(phi[movieid, topic]) + math.log(kappa[rating, userid, topic])
+        return ll
+
+    def calcPhi(self):
+        phi = (self.CountMT + self.beta)
+        norm = (self.CountT + self.info["movies"] * self.beta)
+
+        for topic in xrange(self.numTopics):
+            phi[:, topic] /= norm[topic]
+
+        return phi
+
+    def calcKappa(self):
+        kappa = (self.CountRUT + self.gamma)
+        norm = (self.CountRU + self.numTopics * self.gamma)
+
+        for rating, userid in zip(xrange(6), xrange(self.info["users"])):
+            kappa[rating, userid, :] /= norm[rating, userid]
+
+        return kappa
 
     def getTopicProb(self, userid, movieid, rating):
-        p_mt = (self.CountMT[movieid, :] + self.gamma) / (self.CountT + self.numTopics * self.gamma)
+        p_mt = (self.CountMT[movieid, :] + self.beta) / (self.CountT + self.info["movies"] * self.beta)
         p_ut = (self.CountUT[userid, :] + self.alpha) / (self.CountU[userid] + self.numTopics * self.alpha)
         p_rut = (self.CountRUT[rating, userid, :] + self.gamma) / (self.CountRU[rating, userid] + self.numTopics * self.gamma)
         return p_mt * p_ut * p_rut
+
+    def generateMovieTopics(self):
+        movies = parseMovies()
+        phi = self.calcPhi()
+        for topic in xrange(self.numTopics):
+            top_movies = np.argsort(phi[:, topic])
+            print "Topic: %d" % topic
+            print "\n".join("%s: %.4f" % (movies[movieid][0], phi[movieid, topic]) for movieid in top_movies[-10:])
+            print ""
 
 
 if __name__ == "__main__":
@@ -97,3 +137,4 @@ if __name__ == "__main__":
     gamma = 0.1
     sampler = GibbsSampler(numTopics, alpha, beta, gamma)
     sampler.run(10)
+    sampler.generateMovieTopics()
