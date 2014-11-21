@@ -12,7 +12,7 @@ def parseData():
 
 def create_user_movie_matrix():
     info = getMeta()
-    user_movies = sparse.lil_matrix((info["users"], info["movies"]),
+    user_movies = np.zeros((info["users"], info["movies"]),
                                     dtype=np.uint8)
 
     for user_id, movie_id, rating in parseData():
@@ -20,7 +20,7 @@ def create_user_movie_matrix():
 
     print "Finished Creating User-Movie Matrix"
 
-    return user_movies.asformat("csr")
+    return user_movies
 
 
 def getMeta():
