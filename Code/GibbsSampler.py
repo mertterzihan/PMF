@@ -43,14 +43,10 @@ class GibbsSampler(object):
             self.CountU[userid] += 1
             self.CountRU[rating, userid] += 1
 
-        print "Finished initialization"
-
     def run(self, numIters):
         for currIter in xrange(numIters):
-            prev_user = None
-            # shuffle(self.user_movie_indices)
+            shuffle(self.user_movie_indices)
             for userid, movieid in self.user_movie_indices:
-                topic_probs = np.zeros(self.numTopics)
 
                 # Unassign previous topic
                 prev_topic = self.topic_assignments[userid, movieid]
@@ -59,37 +55,21 @@ class GibbsSampler(object):
                 self.CountUT[userid, prev_topic] -= 1
                 self.CountRUT[rating, userid, prev_topic] -= 1
 
-                try:
-                    assert self.CountMT[movieid, prev_topic] >= 0
-                except AssertionError:
-                    print movieid, userid, prev_topic
-                    continue
-
-                assert self.CountUT[userid, prev_topic] >= 0
-                assert self.CountRUT[rating, userid, prev_topic] >= 0
-
-
                 # Unassign normalization factors
                 self.CountT[prev_topic] -= 1
                 self.CountU[userid] -= 1
                 self.CountRU[rating, userid] -= 1
 
                 # Get probability distribution for (user, movie) over topics
-                for topic in xrange(self.numTopics):
-                    topic_probs[topic] = self.getTopicProb(topic, userid, movieid, rating)
+                topic_probs = self.getTopicProb(userid, movieid, rating)
 
                 # Normalize
                 topic_probs = topic_probs / sum(topic_probs)
 
                 # Sample new topic
-                try:
-                    new_topic = np.random.multinomial(1, topic_probs)
-                except Exception:
-                    print "Topic probs:", topic_probs
-                    print "Topic sum:", sum(topic_probs[:-1])
-                    print "User: %d, Movie: %d" % (userid, movieid)
-                    raise
+                new_topic = np.random.choice(numTopics, 1, p=topic_probs)
 
+                self.topic_assignments[userid, movieid] = new_topic
                 # Update new topic assignments
                 self.CountMT[movieid, new_topic] += 1
                 self.CountUT[userid, new_topic] += 1
@@ -100,16 +80,12 @@ class GibbsSampler(object):
                 self.CountU[userid] += 1
                 self.CountRU[rating, userid] += 1
 
-                if prev_user != userid:
-                    print "User: %d" % userid
-                prev_user = userid
-
             print "Finished iteration %d" % currIter
 
-    def getTopicProb(self, topic, userid, movieid, rating):
-        p_mt = float(self.CountMT[movieid, topic] + self.gamma) / (self.CountT[topic] + self.numTopics * self.gamma)
-        p_ut = float(self.CountUT[userid, topic] + self.alpha) / (self.CountU[userid] + self.numTopics * self.alpha)
-        p_rut = float(self.CountRUT[rating, userid, topic] + self.gamma) / (self.CountRU[rating, userid] + self.numTopics * self.gamma)
+    def getTopicProb(self, userid, movieid, rating):
+        p_mt = (self.CountMT[movieid, :] + self.gamma) / (self.CountT + self.numTopics * self.gamma)
+        p_ut = (self.CountUT[userid, :] + self.alpha) / (self.CountU[userid] + self.numTopics * self.alpha)
+        p_rut = (self.CountRUT[rating, userid, :] + self.gamma) / (self.CountRU[rating, userid] + self.numTopics * self.gamma)
         return p_mt * p_ut * p_rut
 
 
