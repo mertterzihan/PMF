@@ -6,6 +6,9 @@ from parseData import getMeta
 from random import randint, shuffle
 from itertools import izip
 import math
+from collections import defaultdict
+from matplotlib.mlab import PCA
+from matplotlib import pyplot as plt
 
 
 class GibbsSampler(object):
@@ -119,7 +122,17 @@ class GibbsSampler(object):
         p_rut = (self.CountRUT[rating, userid, :] + self.gamma) / (self.CountRU[rating, userid] + self.numTopics * self.gamma)
         return p_mt * p_ut * p_rut
 
-    def generateMovieTopics(self):
+    def genMostLikelyTopic(self):
+        phi = self.calcPhi()
+        movies = parseMovies()
+        topics = defaultdict(list)
+        for movieid in xrange(self.info["movies"]):
+            top_topic = np.argsort(phi[movieid, :])[-1]
+
+            topics[top_topic].append(movies[movieid][0])
+        return topics
+
+    def genMostLikelyMovies(self):
         movies = parseMovies()
         phi = self.calcPhi()
         for topic in xrange(self.numTopics):
@@ -127,6 +140,20 @@ class GibbsSampler(object):
             print "Topic: %d" % topic
             print "\n".join("%s: %.4f" % (movies[movieid][0], phi[movieid, topic]) for movieid in top_movies[-10:])
             print ""
+
+    def visualizePCA(self):
+        phi = self.calcPhi()
+        movies = parseMovies()
+        pca = PCA(phi[:50, :])
+
+        x_axis = pca.Y[:, 0]
+        y_axis = pca.Y[:, 1]
+
+        plt.scatter(x_axis, y_axis)
+        for i, (x, y) in enumerate(izip(x_axis, y_axis)):
+            plt.annotate(movies[i][0], (x, y))
+        plt.show()
+
 
 
 if __name__ == "__main__":
@@ -136,5 +163,11 @@ if __name__ == "__main__":
     beta = 0.01
     gamma = 0.1
     sampler = GibbsSampler(numTopics, alpha, beta, gamma)
-    sampler.run(10)
-    sampler.generateMovieTopics()
+    sampler.run(20)
+    sampler.visualizePCA()
+    # sampler.generateMovieTopics()
+    # topics = sampler.genMostLikelyTopic()
+    # for topicid in topics:
+    #     print "Topic: %d" % topicid
+    #     print "\n".join(title for title in topics[topicid][:10])
+    #     print ""
