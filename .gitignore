@@ -6,3 +6,4 @@
 *.out
 *.synctex.gz
 ml-100k/
+*.pyc
