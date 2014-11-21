@@ -69,26 +69,12 @@ class GibbsSampler(object):
         p_rut = float(self.CountRUT[rating, userid, topic] + self.kappa) / (self.CountRUT[rating, userid, :].sum() + self.numTopics * self.kappa)
         return p_mt * p_ut * p_rut
 
-# def gibbsSampler(numTopics, numIters):
-#     movie_data = parseMovies()
-#     user_movies = create_user_movie_matrix()
-#     info = getMeta()
-#     CountMT = np.zeros( (info["movies"], numTopics) )
-#     CountRUT = np.zeros( (5, info["users"], numTopics) )
-#     CountUT = np.zeros( (info["users"], numTopics) )
-#     idx_row, idx_col = user_movies.nonzero()
-#     idx = zip(idx_row, idx_col)
-#     for userid, movieid in idx:
-#         topic = randint(0, 18)
-#         CountMT[movieid, topic] += 1
-#         rate = user_movies[userid,movieid]
-#         CountRUT[rate, userid, topic] += 1
-#         CountUT[userid, topic] += 1
-#     for currIter in xrange(numIters):
-
-
 
 if __name__ == "__main__":
     numTopics = 19
     numIters = 100
-    gibbsSampler(numTopics, numIters)
+    alpha =
+    beta =
+    gamma =
+    kappa = 0.1
+    sampler = GibbsSampler(numTopics, )
