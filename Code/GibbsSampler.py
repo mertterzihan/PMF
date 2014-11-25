@@ -3,7 +3,7 @@ import scipy as sp
 from parseMovies import parseMovies
 from parseData import create_user_movie_matrix
 from parseData import getMeta
-from random import randint, shuffle
+from random import randint, shuffle, sample
 from itertools import izip
 import math
 from collections import defaultdict
@@ -71,7 +71,7 @@ class GibbsSampler(object):
                 topic_probs = topic_probs / sum(topic_probs)
 
                 # Sample new topic
-                new_topic = np.random.choice(numTopics, 1, p=topic_probs)
+                new_topic = np.random.choice(self.numTopics, 1, p=topic_probs)
 
                 self.topic_assignments[userid, movieid] = new_topic
                 # Update new topic assignments
@@ -135,7 +135,7 @@ class GibbsSampler(object):
     def genMostLikelyMovies(self):
         movies = parseMovies()
         phi = self.calcPhi()
-        for topic in xrange(self.numTopics):
+        for topic in sample(xrange(self.numTopics), 10):
             top_movies = np.argsort(phi[:, topic])
             print "Topic: %d" % topic
             print "\n".join("%s: %.4f" % (movies[movieid][0], phi[movieid, topic]) for movieid in top_movies[-10:])
@@ -144,28 +144,29 @@ class GibbsSampler(object):
     def visualizePCA(self):
         phi = self.calcPhi()
         movies = parseMovies()
-        pca = PCA(phi[:50, :])
+        pca = PCA(phi)
 
-        x_axis = pca.Y[:, 0]
-        y_axis = pca.Y[:, 1]
+        indices = sample(xrange(len(movies)), 50)
+
+        x_axis = pca.Y[indices, 0]
+        y_axis = pca.Y[indices, 1]
 
         plt.scatter(x_axis, y_axis)
-        for i, (x, y) in enumerate(izip(x_axis, y_axis)):
-            plt.annotate(movies[i][0], (x, y))
+        for idx, x, y in izip(indices, x_axis, y_axis):
+            plt.annotate(movies[idx][0].encode('ascii', 'ignore'), (x, y))
         plt.show()
-
-
+        return pca
 
 if __name__ == "__main__":
-    numTopics = 19
-    numIters = 100
+    numTopics = 100
+    numIters = 20
     alpha = 0.1
     beta = 0.01
-    gamma = 0.1
+    gamma = 0.9
     sampler = GibbsSampler(numTopics, alpha, beta, gamma)
-    sampler.run(20)
+    sampler.run(numIters)
+    sampler.genMostLikelyMovies()
     sampler.visualizePCA()
-    # sampler.generateMovieTopics()
     # topics = sampler.genMostLikelyTopic()
     # for topicid in topics:
     #     print "Topic: %d" % topicid
