@@ -1,4 +1,3 @@
-from scipy import sparse
 import numpy as np
 
 
@@ -13,12 +12,10 @@ def parseData():
 def create_user_movie_matrix():
     info = getMeta()
     user_movies = np.zeros((info["users"], info["movies"]),
-                                    dtype=np.uint8)
+                           dtype=np.uint8)
 
     for user_id, movie_id, rating in parseData():
         user_movies[user_id, movie_id] = rating
-
-    print "Finished Creating User-Movie Matrix"
 
     return user_movies
 
