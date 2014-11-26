@@ -13,6 +13,7 @@ import logging.handlers
 import datetime
 import time
 
+
 class GibbsSampler(object):
 
     def __init__(self, numTopics, alpha, beta, gamma):
@@ -128,8 +129,7 @@ class GibbsSampler(object):
                 fig.savefig("figs/ll-%s.png" % ts, format="png")
 
     def graph_loglike(self, log_likelihoods):
-        fig = plt.gcf()
-        fig.add_subplot(111)
+        fig = plt.figure()
         plt.plot(range(1, len(log_likelihoods) + 1), log_likelihoods)
         return fig
 
