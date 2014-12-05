@@ -238,7 +238,7 @@ class GibbsSampler(object):
         x_axis = pca.Y[indices, 0]
         y_axis = pca.Y[indices, 1]
 
-        fig = plt.gcf()
+        fig = plt.figure()
         fig.set_size_inches(10, 8)
         ax = fig.add_subplot(111)
 
