@@ -16,13 +16,13 @@ import time
 
 class GibbsSampler(object):
 
-    def __init__(self, numTopics, alpha, gamma):
+    def __init__(self, numTopics, alpha, beta, gamma):
         # Setup logger
         self.log = logging.getLogger("Gibbs")
         self.log.setLevel(logging.DEBUG)
         formatter = logging.Formatter("%(asctime)s %(message)s",
                                       datefmt="%m/%d/%Y %I:%M:%S %p")
-        fh = logging.handlers.TimedRotatingFileHandler("logs/gibbs.log",
+        fh = logging.handlers.TimedRotatingFileHandler("logs/new/gibbs.log",
                                                        when="D",
                                                        interval=1,
                                                        backupCount=10)
@@ -34,6 +34,7 @@ class GibbsSampler(object):
 
         self.numTopics = numTopics
         self.alpha = alpha
+        self.beta = beta
         self.gamma = gamma
 
         self.info = getMeta()
@@ -109,9 +110,9 @@ class GibbsSampler(object):
             log_likelihoods.append(ll)
             self.log.info("Iteration %d: %.4f", currIter, ll)
 
-            if (currIter + 1) % 1 == 0:
+            if (currIter + 1) % 5 == 0:
                 fig = self.visualizePCA()
-                fig.savefig("figs/%.4f.jpeg" % ll, format="jpeg", dpi=300)
+                fig.savefig("figs/new/%.4f.jpeg" % ll, format="jpeg", dpi=300)
                 topics = self.genMostLikelyTopic()
                 for topicid in topics:
                     # Write out the movies whose top topic is topicid
@@ -133,14 +134,14 @@ class GibbsSampler(object):
         return fig
 
     def logLike(self):
-        # phi = self.calcPhi()
+        phi = self.calcPhi()
         kappa = self.calcKappa()
         ll = 0
 
         for userid, movieid in self.user_movie_indices:
             topic = self.topic_assignments[userid, movieid]
             rating = self.user_movies[userid, movieid]
-            # ll += math.log(phi[movieid, topic]) + math.log(kappa[rating, userid, topic])
+            ll += math.log(phi[movieid, topic]) + math.log(kappa[rating, userid, topic])
             ll += math.log(kappa[rating, userid, topic])
 
         try:
@@ -152,9 +153,10 @@ class GibbsSampler(object):
         return ll
 
     def calcPhi(self):
-        phi = self.CountMT
-        phi.astype(np.float)
-        norm = (self.CountT)
+        phi = (self.CountMT + self.beta)
+        phi = phi.astype(np.float)
+        norm = self.CountT + self.info["movies"]*self.beta
+        norm = norm.astype(np.float)
 
         for topic in xrange(self.numTopics):
             phi[:, topic] /= norm[topic]
@@ -169,12 +171,12 @@ class GibbsSampler(object):
                                e, p)
                 raise
 
-            # try:
-            #     assert np.isclose(phi[:, topic].sum(), 1.0)
-            # except AssertionError:
-            #     self.log.error("Phi sum %.4f not equal to 1.0",
-            #                    phi[:, topic].sum())
-            #     raise
+            try:
+                assert np.isclose(phi[:, topic].sum(), 1.0)
+            except AssertionError:
+                self.log.error("Phi sum %.4f not equal to 1.0",
+                               phi[:, topic].sum())
+                self.log.error("Topic ID: %d", topic)
 
         return phi
 
@@ -203,10 +205,10 @@ class GibbsSampler(object):
         return kappa
 
     def getTopicProb(self, userid, movieid, rating):
-        # p_mt = (self.CountMT[movieid, :] + self.beta) / (self.CountT + self.info["movies"] * self.beta)
+        p_mt = (self.CountMT[movieid, :] + self.beta) / (self.CountT + self.info["movies"] * self.beta)
         p_ut = (self.CountUT[userid, :] + self.alpha) / (self.CountU[userid] + self.numTopics * self.alpha)
         p_rut = (self.CountRUT[rating, userid, :] + self.gamma) / (self.CountRU[rating, userid] + self.numTopics * self.gamma)
-        return p_ut * p_rut
+        return p_ut * p_rut * p_mt
 
     def genMostLikelyTopic(self):
         phi = self.calcPhi()
@@ -228,7 +230,7 @@ class GibbsSampler(object):
             print "\n".join("%s: %.4f" % (movies[movieid][0], phi[movieid, topic]) for movieid in top_movies[-10:])
             print ""
 
-    def visualizePCA(self, samples=50):
+    def visualizePCA(self, samples=10):
         phi = self.calcPhi()
         movies = parseMovies()
         pca = PCA(phi)
@@ -248,11 +250,12 @@ class GibbsSampler(object):
         return fig
 
 if __name__ == "__main__":
-    numTopics = 20
-    numIters = 5
-    alpha = 0.1
+    numTopics = 15
+    numIters = 15
+    alpha = 0.9
+    beta = 0.01
     gamma = 0.9
-    sampler = GibbsSampler(numTopics, alpha, gamma)
+    sampler = GibbsSampler(numTopics, alpha, beta, gamma)
 
     sampler.run(numIters)
     # sampler.genMostLikelyMovies()
