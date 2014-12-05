@@ -42,15 +42,15 @@ class GibbsSampler(object):
         user_indices, movie_indices = self.user_movies.nonzero()
         self.user_movie_indices = zip(user_indices, movie_indices)
 
-        self.CountMT = np.zeros((self.info["movies"], numTopics))
-        self.CountRUT = np.zeros((6, self.info["users"], numTopics))  # ratings 1-5 and 0
-        self.CountUT = np.zeros((self.info["users"], numTopics))
-        self.topic_assignments = np.zeros((self.info["users"], self.info["movies"]))
+        self.CountMT = np.zeros((self.info["movies"], numTopics), dtype=np.int)
+        self.CountRUT = np.zeros((6, self.info["users"], numTopics), dtype=np.int)  # ratings 1-5 and 0
+        self.CountUT = np.zeros((self.info["users"], numTopics), dtype=np.int)
+        self.topic_assignments = np.zeros((self.info["users"], self.info["movies"]), dtype=np.int)
 
         # Normalization factors
-        self.CountT = np.zeros(numTopics)
-        self.CountU = np.zeros(self.info["users"])
-        self.CountRU = np.zeros((6, self.info["users"]))
+        self.CountT = np.zeros(numTopics, dtype=np.int)
+        self.CountU = np.zeros(self.info["users"], dtype=np.int)
+        self.CountRU = np.zeros((6, self.info["users"]), dtype=np.int)
 
         for userid, movieid in self.user_movie_indices:
             topic = randint(0, numTopics - 1)
@@ -81,7 +81,7 @@ class GibbsSampler(object):
                 self.CountRUT[rating, userid, prev_topic] -= 1
 
                 # Unassign normalization factors
-                # self.CountT[prev_topic] -= 1
+                self.CountT[prev_topic] -= 1
                 self.CountU[userid] -= 1
                 self.CountRU[rating, userid] -= 1
 
@@ -101,7 +101,7 @@ class GibbsSampler(object):
                 self.CountRUT[rating, userid, new_topic] += 1
 
                 # Assign normalization factors
-                # self.CountT[new_topic] += 1
+                self.CountT[new_topic] += 1
                 self.CountU[userid] += 1
                 self.CountRU[rating, userid] += 1
 
@@ -152,7 +152,8 @@ class GibbsSampler(object):
         return ll
 
     def calcPhi(self):
-        phi = (self.CountMT )
+        phi = self.CountMT
+        phi.astype(np.float)
         norm = (self.CountT)
 
         for topic in xrange(self.numTopics):
