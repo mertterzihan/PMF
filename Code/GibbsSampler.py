@@ -16,7 +16,7 @@ import time
 
 class GibbsSampler(object):
 
-    def __init__(self, numTopics, alpha, beta, gamma):
+    def __init__(self, numTopics, alpha, gamma):
         # Setup logger
         self.log = logging.getLogger("Gibbs")
         self.log.setLevel(logging.DEBUG)
@@ -34,7 +34,6 @@ class GibbsSampler(object):
 
         self.numTopics = numTopics
         self.alpha = alpha
-        self.beta = beta
         self.gamma = gamma
 
         self.info = getMeta()
@@ -110,7 +109,7 @@ class GibbsSampler(object):
             log_likelihoods.append(ll)
             self.log.info("Iteration %d: %.4f", currIter, ll)
 
-            if (currIter + 1) % 100 == 0:
+            if (currIter + 1) % 1 == 0:
                 fig = self.visualizePCA()
                 fig.savefig("figs/%.4f.png" % ll, format="png", dpi=300)
                 topics = self.genMostLikelyTopic()
@@ -153,8 +152,8 @@ class GibbsSampler(object):
         return ll
 
     def calcPhi(self):
-        phi = (self.CountMT + self.beta)
-        norm = (self.CountT + self.info["movies"] * self.beta)
+        phi = (self.CountMT )
+        norm = (self.CountT)
 
         for topic in xrange(self.numTopics):
             phi[:, topic] /= norm[topic]
@@ -238,7 +237,7 @@ class GibbsSampler(object):
         x_axis = pca.Y[indices, 0]
         y_axis = pca.Y[indices, 1]
 
-        fig = plt.gcf()
+        fig = plt.figure()
         fig.set_size_inches(10, 8)
         ax = fig.add_subplot(111)
 
@@ -249,11 +248,10 @@ class GibbsSampler(object):
 
 if __name__ == "__main__":
     numTopics = 20
-    numIters = 5000
+    numIters = 5
     alpha = 0.1
-    beta = 0.01
     gamma = 0.9
-    sampler = GibbsSampler(numTopics, alpha, beta, gamma)
+    sampler = GibbsSampler(numTopics, alpha, gamma)
 
     sampler.run(numIters)
     # sampler.genMostLikelyMovies()
