@@ -110,7 +110,7 @@ class GibbsSampler(object):
             log_likelihoods.append(ll)
             self.log.info("Iteration %d: %.4f", currIter, ll)
 
-            if (currIter + 1) % 1 == 0:
+            if (currIter + 1) % 100 == 0:
                 fig = self.visualizePCA()
                 fig.savefig("figs/%.4f.png" % ll, format="png", dpi=300)
                 topics = self.genMostLikelyTopic()
@@ -249,7 +249,7 @@ class GibbsSampler(object):
 
 if __name__ == "__main__":
     numTopics = 20
-    numIters = 1000
+    numIters = 5000
     alpha = 0.1
     beta = 0.01
     gamma = 0.9
