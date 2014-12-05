@@ -111,7 +111,7 @@ class GibbsSampler(object):
 
             if (currIter + 1) % 1 == 0:
                 fig = self.visualizePCA()
-                fig.savefig("figs/%.4f.png" % ll, format="png", dpi=300)
+                fig.savefig("figs/%.4f.jpeg" % ll, format="jpeg", dpi=300)
                 topics = self.genMostLikelyTopic()
                 for topicid in topics:
                     # Write out the movies whose top topic is topicid
@@ -125,7 +125,7 @@ class GibbsSampler(object):
 
                 fig = self.graph_loglike(log_likelihoods)
                 ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                fig.savefig("figs/ll-%s.png" % ts, format="png")
+                fig.savefig("figs/ll-%s.jpeg" % ts, format="jpeg")
 
     def graph_loglike(self, log_likelihoods):
         fig = plt.figure()
