@@ -22,7 +22,7 @@ class GibbsSampler(object):
         self.log.setLevel(logging.DEBUG)
         formatter = logging.Formatter("%(asctime)s %(message)s",
                                       datefmt="%m/%d/%Y %I:%M:%S %p")
-        fh = logging.handlers.TimedRotatingFileHandler("logs/new/gibbs.log",
+        fh = logging.handlers.TimedRotatingFileHandler("logs/tmp/gibbs.log",
                                                        when="D",
                                                        interval=1,
                                                        backupCount=10)
@@ -112,7 +112,7 @@ class GibbsSampler(object):
 
             if (currIter + 1) % 5 == 0:
                 fig = self.visualizePCA()
-                fig.savefig("figs/new/%.4f.jpeg" % ll, format="jpeg", dpi=300)
+                fig.savefig("figs/tmp/%.4f.jpeg" % ll, format="jpeg", dpi=300)
                 topics = self.genMostLikelyTopic()
                 for topicid in topics:
                     # Write out the movies whose top topic is topicid
@@ -230,7 +230,7 @@ class GibbsSampler(object):
             print "\n".join("%s: %.4f" % (movies[movieid][0], phi[movieid, topic]) for movieid in top_movies[-10:])
             print ""
 
-    def visualizePCA(self, samples=10):
+    def visualizePCA(self, samples=20):
         phi = self.calcPhi()
         movies = parseMovies()
         pca = PCA(phi)
@@ -250,9 +250,9 @@ class GibbsSampler(object):
         return fig
 
 if __name__ == "__main__":
-    numTopics = 15
+    numTopics = 20
     numIters = 15
-    alpha = 0.9
+    alpha = 0.1
     beta = 0.01
     gamma = 0.9
     sampler = GibbsSampler(numTopics, alpha, beta, gamma)

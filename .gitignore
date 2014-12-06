@@ -9,5 +9,5 @@ ml-100k/
 *.pyc
 *.txt
 *.png
-logs/*
-figs/*
+logs
+figs
