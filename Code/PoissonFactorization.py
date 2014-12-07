@@ -2,10 +2,15 @@ import numpy as np
 from random import shuffle
 from itertools import product
 from parseData import create_user_movie_matrix, getMeta
+from scipy.stats import poisson
+from scipy.stats import gamma as gammafun
 
 
 def gamma(shape, rate, size=None):
     return np.random.gamma(shape, 1.0 / rate, size)
+
+def gammapdf(x, shape, rate):
+    return gammafun.pdf(x, shape, 1.0/rate)
 
 
 class BayesianPoissonFactorization(object):
@@ -54,26 +59,87 @@ class BayesianPoissonFactorization(object):
 
             self.zs[user, movie, :] = np.random.multinomial(self.ratings[user, movie], p)
 
-        def sample(self):
-            """ One iteration of Gibbs sampling. """
-            # Sample thetas
-            rand_users = range(self.nusers)
-            shuffle(rand_users)
-            for user in rand_users:
-                rand_topics = range(self.ntopics)
-                shuffle(rand_topics)
-                for topic in rand_topics:
-                    self.thetas[user, topic] = gamma(a + np.sum(self.zs[user, :, topic]),
-                                                     self.xis[user] + np.sum(self.betas[:, topic]))
+    def sample(self):
+        """ One iteration of Gibbs sampling. """
+        # Sample thetas
+        rand_users = range(self.nusers)
+        shuffle(rand_users)
+        for user in rand_users:
+            rand_topics = range(self.ntopics)
+            shuffle(rand_topics)
+            for topic in rand_topics:
+                self.thetas[user, topic] = gamma(self.a + np.sum(self.zs[user, :, topic]),
+                                                 self.xis[user] + np.sum(self.betas[:, topic]))
+        print "Done with thetas"
 
-            # Sample betas
+        # Sample betas
+        rand_movies = range(self.nmovies)
+        shuffle(rand_movies)
+        for movie in rand_movies:
+            rand_topics = range(self.ntopics)
+            shuffle(rand_topics)
+            for topic in rand_topics:
+                self.betas[movie, topic] = gamma(self.a + np.sum(self.zs[:,movie,topic]),
+                                                 self.etas[movie] + np.sum(self.thetas[:,topic]))
+        print "Done with betas"
 
+        # Sample Xis
+        rand_users = range(self.nusers)
+        shuffle(rand_users)
+        for user in rand_users:
+            self.xis[user] = gamma(self.ap + self.ntopics*self.a, self.b + self.thetas[user,:].sum())
+        print "Done with xis"
 
+        # Sample Etas
+        rand_movies = range(self.nmovies)
+        shuffle(rand_movies)
+        for movie in rand_movies:
+            self.etas[movie] = gamma(self.cp + self.ntopics*self.c, self.d + self.betas[movie,:].sum())
+        print "Done with etas"
+
+        # Sample Z's
+        shuffle(self.nonzero_indices)
+        for user, movie in self.nonzero_indices:
+            p = np.multiply(self.thetas[user, :], self.betas[movie, :])
+            p /= p.sum()
+
+            self.zs[user, movie, :] = np.random.multinomial(self.ratings[user, movie], p)
+        print "Done with zs"
+
+        print self.compute_ll()
+
+    def compute_ll(self):
+        ll = 0
+
+        for user, movie in self.nonzero_indices:
+            assert self.ratings[user,movie] > 0
+            ll += np.log(poisson.pmf(self.ratings[user,movie], np.dot(self.thetas[user,:], self.betas[movie,:])))
+
+        for user in xrange(self.nusers):
+            try:
+                assert gammapdf(self.xis[user], self.ap, self.ap/self.b) > 0
+            except AssertionError:
+                print self.xis[user], self.ap, self.ap/self.b, gammapdf(self.xis[user], self.ap, self.ap/self.b)
+                raise
+            ll += np.log(gammapdf(self.xis[user], self.ap, self.ap/self.b))
+            for topic in xrange(self.ntopics):
+                assert gammapdf(self.thetas[user,topic], self.a, self.xis[user]) > 0
+                ll += np.log(gammapdf(self.thetas[user,topic], self.a, self.xis[user]))
+
+        for movie in xrange(self.nmovies):
+            assert gammapdf(self.etas[movie], self.cp, self.cp/self.d) > 0
+            ll += np.log(gammapdf(self.etas[movie], self.cp, self.cp/self.d))
+            for topic in xrange(self.ntopics):
+                assert gammapdf(self.betas[movie,topic], self.c, self.etas[movie]) > 0
+                ll += np.log(gammapdf(self.betas[movie,topic], self.c, self.etas[movie]))
+
+        return ll
 
 def main():
     ratings = create_user_movie_matrix()
     bpf = BayesianPoissonFactorization(0.3, 0.3, 1.0, 0.3, 0.3, 1.0, 10,
                                        ratings)
+    bpf.sample()
 
 if __name__ == '__main__':
     main()
