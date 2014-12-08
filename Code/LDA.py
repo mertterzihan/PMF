@@ -67,9 +67,9 @@ class GibbsSampler(object):
             self.CountRU[rating, userid] += 1
 
     def run(self, total_iters, burn_in, thinning):
-        self.log.info("Starting Gibbs Sampling for %d iterations with %d users, %d movies, %d ratings",
+        self.log.info("Starting Gibbs Sampling for %d iterations with %d users, %d movies, %d ratings, %d topics",
                       total_iters, self.info["users"], self.info["movies"],
-                      self.info["ratings"])
+                      self.info["ratings"], self.numTopics)
         log_likelihoods = []
         collection = total_iters*(1-burn_in) / thinning
         self.theta_collection = np.empty( (collection, self.info["users"], self.numTopics) )
@@ -117,6 +117,8 @@ class GibbsSampler(object):
                     ll = self.logLike(idx)
                     log_likelihoods.append(ll)
                     self.log.info("Iteration %d: %.4f", currIter, ll)
+
+            print 'Done with iter %d' % currIter
             '''
             if (currIter + 1) % 5 == 0:
                 fig = self.visualizePCA()
@@ -167,7 +169,7 @@ class GibbsSampler(object):
             ll += -gamma_phi + (self.beta-1)*np.sum(np.log(phi[movieid,:]))
 
         gamma_kappa = 5*math.lgamma(self.gamma) - math.lgamma(5*self.gamma)
-        for userid, topic in prod(xrange(self.info["users"]), xrange(self.numTopics)):
+        for userid, topic in product(xrange(self.info["users"]), xrange(self.numTopics)):
             ll += -gamma_kappa + (self.gamma-1)*np.sum(np.log(kappa[:,userid, topic]))
 
         try:

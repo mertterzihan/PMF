@@ -10,6 +10,7 @@ import sys
 def gamma(shape, rate, size=None):
     return np.random.gamma(shape, 1.0 / rate, size)
 
+
 def gammapdf(x, shape, rate):
     return gammafun.pdf(x, shape, scale=1.0/rate)
 
@@ -151,18 +152,16 @@ class BayesianPoissonFactorization(object):
 
         return ll
 
+
 def main():
     topics = int(sys.argv[1])
     total_iters = int(sys.argv[2])
     burn_in = float(sys.argv[3])
     thinning = int(sys.argv[4])
-    
+
     ratings = create_user_movie_matrix()
     bpf = BayesianPoissonFactorization(0.3, 0.3, 1.0, 0.3, 0.3, 1.0, topics,
                                        ratings)
-    # total_iters = 5
-    # burn_in = 0.0
-    # thinning = 1
     bpf.sample(total_iters, burn_in, thinning)
 
 if __name__ == '__main__':
