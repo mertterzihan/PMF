@@ -111,9 +111,9 @@ class GibbsSampler(object):
                 self.CountU[userid] += 1
                 self.CountRU[rating, userid] += 1
 
-            if curr_iter >= (total_iters * burn_in):
-                if ((curr_iter - total_iters*burn_in) % thinning) == 0:
-                    idx = (curr_iter - total_iters*burn_in) / thinning
+            if currIter >= (total_iters * burn_in):
+                if ((currIter - total_iters*burn_in) % thinning) == 0:
+                    idx = (currIter - total_iters*burn_in) / thinning
                     ll = self.logLike(idx)
                     log_likelihoods.append(ll)
                     self.log.info("Iteration %d: %.4f", currIter, ll)
@@ -136,7 +136,7 @@ class GibbsSampler(object):
                 ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 fig.savefig("figs/ll-%s.jpeg" % ts, format="jpeg")
             '''
-        np.savez('result_lda/result.npz', phi_collection=self.phi_collection, 
+        np.savez('result_lda/result.npz', phi_collection=self.phi_collection,
                  theta_collection=self.theta_collection, kappa_collection=self.kappa_collection)
         np.save('result_lda/ll.npy', np.asarray(log_likelihoods))
 
@@ -300,7 +300,7 @@ if __name__ == "__main__":
 
     burn_in = float(sys.argv[3])
     thinning = int(sys.argv[4])
-    sampler.run(numIters)
+    sampler.run(numIters, burn_in, thinning)
     # sampler.genMostLikelyMovies()
     # sampler.visualizePCA()
     # topics = sampler.genMostLikelyTopic()
