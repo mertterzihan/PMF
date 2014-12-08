@@ -12,6 +12,7 @@ import logging
 import logging.handlers
 import datetime
 import time
+import sys
 
 
 class GibbsSampler(object):
@@ -65,12 +66,16 @@ class GibbsSampler(object):
             self.CountU[userid] += 1
             self.CountRU[rating, userid] += 1
 
-    def run(self, numIters):
+    def run(self, total_iters, burn_in, thinning):
         self.log.info("Starting Gibbs Sampling for %d iterations with %d users, %d movies, %d ratings",
-                      numIters, self.info["users"], self.info["movies"],
+                      total_iters, self.info["users"], self.info["movies"],
                       self.info["ratings"])
         log_likelihoods = []
-        for currIter in xrange(numIters):
+        collection = total_iters*(1-burn_in) / thinning
+        self.theta_collection = np.empty( (collection, self.info["users"], self.numTopics) )
+        self.phi_collection = np.empty( (collection, self.info["movies"], self.numTopics) )
+        self.kappa_collection = np.empty( (collection, 5, self.info["users"], self.numTopics) )
+        for currIter in xrange(total_iters):
             shuffle(self.user_movie_indices)
             for userid, movieid in self.user_movie_indices:
 
@@ -106,10 +111,13 @@ class GibbsSampler(object):
                 self.CountU[userid] += 1
                 self.CountRU[rating, userid] += 1
 
-            ll = self.logLike()
-            log_likelihoods.append(ll)
-            self.log.info("Iteration %d: %.4f", currIter, ll)
-
+            if curr_iter >= (total_iters * burn_in):
+                if ((curr_iter - total_iters*burn_in) % thinning) == 0:
+                    idx = (curr_iter - total_iters*burn_in) / thinning
+                    ll = self.logLike(idx)
+                    log_likelihoods.append(ll)
+                    self.log.info("Iteration %d: %.4f", currIter, ll)
+            '''
             if (currIter + 1) % 5 == 0:
                 fig = self.visualizePCA()
                 fig.savefig("figs/tmp/%.4f.jpeg" % ll, format="jpeg", dpi=300)
@@ -127,22 +135,40 @@ class GibbsSampler(object):
                 fig = self.graph_loglike(log_likelihoods)
                 ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 fig.savefig("figs/ll-%s.jpeg" % ts, format="jpeg")
+            '''
+        np.savez('result_lda/result.npz', phi_collection=self.phi_collection, 
+                 theta_collection=self.theta_collection, kappa_collection=self.kappa_collection)
+        np.save('result_lda/ll.npy', np.asarray(log_likelihoods))
 
     def graph_loglike(self, log_likelihoods):
         fig = plt.figure()
         plt.plot(range(1, len(log_likelihoods) + 1), log_likelihoods)
         return fig
 
-    def logLike(self):
+    def logLike(self, idx):
         phi = self.calcPhi()
         kappa = self.calcKappa()
+        theta = self.calcTheta()
         ll = 0
 
         for userid, movieid in self.user_movie_indices:
             topic = self.topic_assignments[userid, movieid]
             rating = self.user_movies[userid, movieid]
-            ll += math.log(phi[movieid, topic]) + math.log(kappa[rating, userid, topic])
+            ll += math.log(phi[movieid, topic])
             ll += math.log(kappa[rating, userid, topic])
+            ll += math.log(theta[userid, topic])
+
+        gamma_alpha = self.numTopics*math.lgamma(self.alpha) - math.lgamma(self.numTopics*self.alpha)
+        for userid in xrange(self.info["users"]):
+            ll += -gamma_alpha + (self.alpha-1)*np.sum(np.log(theta[userid,:]))
+
+        gamma_phi = self.numTopics*math.lgamma(self.beta) - math.lgamma(self.numTopics*self.beta)
+        for movieid in xrange(self.info["movies"]):
+            ll += -gamma_phi + (self.beta-1)*np.sum(np.log(phi[movieid,:]))
+
+        gamma_kappa = 5*math.lgamma(self.gamma) - math.lgamma(5*self.gamma)
+        for userid, topic in prod(xrange(self.info["users"]), xrange(self.numTopics)):
+            ll += -gamma_kappa + (self.gamma-1)*np.sum(np.log(kappa[:,userid, topic]))
 
         try:
             assert ll < 0
@@ -150,7 +176,22 @@ class GibbsSampler(object):
             self.log.error("Log likelihood %.4f greater than 0", ll)
             raise
 
+        self.theta_collection[idx, :, :] = theta
+        self.kappa_collection[idx, :, :, :] = kappa
+        self.phi_collection[idx, :, :] = phi
+
         return ll
+
+    def calcTheta(self):
+        theta = (self.CountUT + self.alpha)
+        theta = theta.astype(np.float)
+        norm = self.CountT + self.info["users"]*self.alpha
+        norm = norm.astype(np.float)
+
+        for topic in xrange(self.numTopics):
+            theta[:,topic] /= norm[topic]
+
+        return theta
 
     def calcPhi(self):
         phi = (self.CountMT + self.beta)
@@ -250,13 +291,15 @@ class GibbsSampler(object):
         return fig
 
 if __name__ == "__main__":
-    numTopics = 20
-    numIters = 15
+    numTopics = int(sys.argv[1])
+    numIters = int(sys.argv[2])
     alpha = 0.1
     beta = 0.01
     gamma = 0.9
     sampler = GibbsSampler(numTopics, alpha, beta, gamma)
 
+    burn_in = float(sys.argv[3])
+    thinning = int(sys.argv[4])
     sampler.run(numIters)
     # sampler.genMostLikelyMovies()
     # sampler.visualizePCA()
