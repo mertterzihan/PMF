@@ -4,6 +4,7 @@ from itertools import product
 from parseData import create_user_movie_matrix, getMeta
 from scipy.stats import poisson
 from scipy.stats import gamma as gammafun
+import sys
 
 
 def gamma(shape, rate, size=None):
@@ -60,7 +61,6 @@ class BayesianPoissonFactorization(object):
             self.zs[user, movie, :] = np.random.multinomial(self.ratings[user, movie], p)
 
     def sample(self, total_iters, burn_in, thinning):
-        curr_iter = 0
         collection = total_iters*(1-burn_in) / thinning
         self.beta_collection = np.empty( (collection, self.nmovies, self.ntopics) )
         self.theta_collection = np.empty( (collection, self.nusers, self.ntopics) )
@@ -120,8 +120,9 @@ class BayesianPoissonFactorization(object):
                     self.loglikelihoods.append(ll)
                     print ll
             print 'Done with iter %d' % curr_iter
-        np.savez('result.npz', beta_collection=self.beta_collection, theta_collection=self.theta_collection,
+        np.savez('result_poisson/result.npz', beta_collection=self.beta_collection, theta_collection=self.theta_collection,
                  xi_collection=self.xi_collection, eta_collection=self.eta_collection)
+        np.save('result_poisson/ll.npy', np.asarray(self.loglikelihoods))
 
     def compute_ll(self):
         ll = 0
@@ -151,12 +152,17 @@ class BayesianPoissonFactorization(object):
         return ll
 
 def main():
+    topics = int(sys.argv[1])
+    total_iters = int(sys.argv[2])
+    burn_in = float(sys.argv[3])
+    thinning = int(sys.argv[4])
+    
     ratings = create_user_movie_matrix()
-    bpf = BayesianPoissonFactorization(0.3, 0.3, 1.0, 0.3, 0.3, 1.0, 10,
+    bpf = BayesianPoissonFactorization(0.3, 0.3, 1.0, 0.3, 0.3, 1.0, topics,
                                        ratings)
-    total_iters = 5
-    burn_in = 0.0
-    thinning = 1
+    # total_iters = 5
+    # burn_in = 0.0
+    # thinning = 1
     bpf.sample(total_iters, burn_in, thinning)
 
 if __name__ == '__main__':
