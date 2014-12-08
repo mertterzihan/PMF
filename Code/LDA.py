@@ -23,7 +23,7 @@ class GibbsSampler(object):
         self.log.setLevel(logging.DEBUG)
         formatter = logging.Formatter("%(asctime)s %(message)s",
                                       datefmt="%m/%d/%Y %I:%M:%S %p")
-        fh = logging.handlers.TimedRotatingFileHandler("logs/tmp/gibbs.log",
+        fh = logging.handlers.TimedRotatingFileHandler("logs/gibbs.log",
                                                        when="D",
                                                        interval=1,
                                                        backupCount=10)
@@ -74,7 +74,7 @@ class GibbsSampler(object):
         collection = total_iters*(1-burn_in) / thinning
         self.theta_collection = np.empty( (collection, self.info["users"], self.numTopics) )
         self.phi_collection = np.empty( (collection, self.info["movies"], self.numTopics) )
-        self.kappa_collection = np.empty( (collection, 5, self.info["users"], self.numTopics) )
+        self.kappa_collection = np.empty( (collection, 6, self.info["users"], self.numTopics) )
         for currIter in xrange(total_iters):
             shuffle(self.user_movie_indices)
             for userid, movieid in self.user_movie_indices:
@@ -117,7 +117,6 @@ class GibbsSampler(object):
                     ll = self.logLike(idx)
                     log_likelihoods.append(ll)
                     self.log.info("Iteration %d: %.4f", currIter, ll)
-
             print 'Done with iter %d' % currIter
             '''
             if (currIter + 1) % 5 == 0:
@@ -170,7 +169,7 @@ class GibbsSampler(object):
 
         gamma_kappa = 5*math.lgamma(self.gamma) - math.lgamma(5*self.gamma)
         for userid, topic in product(xrange(self.info["users"]), xrange(self.numTopics)):
-            ll += -gamma_kappa + (self.gamma-1)*np.sum(np.log(kappa[:,userid, topic]))
+            ll += -gamma_kappa + (self.gamma-1)*np.sum(np.log(kappa[1:,userid, topic]))
 
         try:
             assert ll < 0
@@ -204,46 +203,14 @@ class GibbsSampler(object):
         for topic in xrange(self.numTopics):
             phi[:, topic] /= norm[topic]
 
-            # Sanity checks
-            try:
-                assert all(0 <= p <= 1 for p in phi[:, topic])
-            except AssertionError:
-                e, p = [(i, p) for i, p in enumerate(phi[:, topic])
-                        if p > 1 or p < 0][0]
-                self.log.error("Phi element %d, %.4f not a probability",
-                               e, p)
-                raise
-
-            try:
-                assert np.isclose(phi[:, topic].sum(), 1.0)
-            except AssertionError:
-                self.log.error("Phi sum %.4f not equal to 1.0",
-                               phi[:, topic].sum())
-                self.log.error("Topic ID: %d", topic)
-
         return phi
 
     def calcKappa(self):
         kappa = (self.CountRUT + self.gamma)
         norm = (self.CountRU + self.numTopics * self.gamma)
 
-        for rating, userid in product(xrange(6), xrange(self.info["users"])):
+        for rating, userid in product(xrange(1, 6), xrange(self.info["users"])):
             kappa[rating, userid, :] /= norm[rating, userid]
-
-            # Sanity checks
-            try:
-                assert all(0 <= p <= 1 for p in kappa[rating, userid, :])
-            except AssertionError:
-                e, p = [(i, p) for i, p in enumerate(kappa[rating, userid, :])
-                        if p > 1 or p < 0][0]
-                self.log.error("Kappa element %d, %.4f not a probability",
-                               e, p)
-            # try:
-            #     assert np.isclose(kappa[rating, userid, :].sum(), 1.0)
-            # except AssertionError:
-            #     self.log.error("Kappa sum %.4f not equal to 1.0",
-            #                    kappa[rating, userid, :].sum())
-            #     raise
 
         return kappa
 
