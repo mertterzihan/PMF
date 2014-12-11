@@ -171,11 +171,16 @@ class GibbsSampler(object):
         for userid, topic in product(xrange(self.info["users"]), xrange(self.numTopics)):
             ll += -gamma_kappa + (self.gamma-1)*np.sum(np.log(kappa[1:,userid, topic]))
 
-        try:
-            assert ll < 0
-        except AssertionError:
-            self.log.error("Log likelihood %.4f greater than 0", ll)
-            raise
+        # Dirichlet PDF can be > 1, so ignore this
+        # try:
+        #     assert ll < 0
+        # except AssertionError:
+        #     self.log.error("Log likelihood %.4f greater than 0", ll)
+        #     self.log.error("Gamma_alpha: %.4f", gamma_alpha)
+        #     self.log.error("Gamma_phi: %.4f", gamma_phi)
+        #     self.log.error("Gamma_kappa: %.4f", gamma_kappa)
+
+        #     raise
 
         self.theta_collection[idx, :, :] = theta
         self.kappa_collection[idx, :, :, :] = kappa
@@ -234,7 +239,7 @@ class GibbsSampler(object):
     def genMostLikelyMovies(self):
         movies = parseMovies()
         phi = self.calcPhi()
-        for topic in sample(xrange(self.numTopics), 10):
+        for topic in xrange(15):
             top_movies = np.argsort(phi[:, topic])
             print "Topic: %d" % topic
             print "\n".join("%s: %.4f" % (movies[movieid][0], phi[movieid, topic]) for movieid in top_movies[-10:])
@@ -269,6 +274,25 @@ if __name__ == "__main__":
 
     burn_in = float(sys.argv[3])
     thinning = int(sys.argv[4])
+
+    try:
+        alpha = float(sys.argv[5])
+    except:
+        print "Using default value for alpha = 0.1"
+        alpha = 0.1
+
+    try:
+        beta = float(sys.argv[6])
+    except:
+        print "Using default value for beta = 0.01"
+        beta = 0.01
+
+    try:
+        gamma = float(sys.argv[7])
+    except:
+        print "Using default value for gamma = 0.9"
+        gamma = 0.9
+
     sampler.run(numIters, burn_in, thinning)
     # sampler.genMostLikelyMovies()
     # sampler.visualizePCA()
