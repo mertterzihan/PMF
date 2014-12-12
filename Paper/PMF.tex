@@ -7,15 +7,17 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{natbib}
-\usepackage{bibhacks}
+	\usepackage{bibhacks}
 \usepackage[nowarn]{glossaries}
 %\documentstyle[nips13submit_09,times,art10]{article} % For LaTeX 2.09
 
-% Define acronyms
+% Use these acronyms instead of writing PMF or Probabilistic Matrix Factorization
+% They take care of doing Probabilistic Matrix Factorization (PMF) the first
+% time it is mentioned, etc...
 \newacronym{pmf}{PMF}{Probabilistic Matrix Factorization}
 \newacronym{lda}{LDA}{Latent Dirichlet Allocation}
 \newacronym{bpf}{BPF}{Bayesian Poisson Factorization}
-\newacronym{hpf}{HP}{Heirarchical Poisson Factorization}
+\newacronym{hpf}{HPF}{Hierarchical Poisson Factorization}
 \newacronym{cf}{CF}{Collaborative Filtering}
 
 \title{Probabilistic Matrix Factorization}
