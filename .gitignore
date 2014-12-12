@@ -4,6 +4,7 @@
 *.blg
 *.log
 *.out
+*.pdf
 *.synctex.gz
 ml-100k/
 *.pyc

@@ -1,5 +1,5 @@
 \documentclass{article} % For LaTeX2e
-\usepackage{nips13submit_e,times}
+\usepackage{nips14submit_e,times}
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{amsmath}
@@ -8,8 +8,15 @@
 \usepackage{subcaption}
 \usepackage{natbib}
 \usepackage{bibhacks}
+\usepackage[nowarn]{glossaries}
 %\documentstyle[nips13submit_09,times,art10]{article} % For LaTeX 2.09
 
+% Define acronyms
+\newacronym{pmf}{PMF}{Probabilistic Matrix Factorization}
+\newacronym{lda}{LDA}{Latent Dirichlet Allocation}
+\newacronym{bpf}{BPF}{Bayesian Poisson Factorization}
+\newacronym{hpf}{HP}{Heirarchical Poisson Factorization}
+\newacronym{cf}{CF}{Collaborative Filtering}
 
 \title{Probabilistic Matrix Factorization}
 
@@ -45,10 +52,43 @@
 
 
 \maketitle
+\begin{abstract}
+This is an abstract.
+\end{abstract}
 
 \section{Introduction}
 
 \section{Related Work}
+
+\Gls{pmf} has been used extensively and to success in \gls{cf} systems \cite{koren2009matrix}. Some notable techniques that have been used in this area are: Probabilistic Latent Semantic Analysis (PLSA) \cite{hofmann1999probabilistic}, Multinomial Principal Component Analysis \cite{buntine2002variational}, \acrfull{lda} \cite{lda}, and \acrfull{bpf} \cite{gopalan2013scalable}.
+
+\Gls{lda} is one of the most widely used matrix factorization technique in
+\gls{cf} systems. As studied in \cite{lda} and \cite{discrete-pca},
+one can observe that LDA is equivalent to factorizing a matrix
+probabilistically using a graphical model representation. Instead of dealing with a co-occurence matrix, we will try to propose a model and
+a learning algorithm to factorize a matrix where each cell is a rating of an item
+by a particular user. Therefore, in addition to LDA, we would also like to generate
+ratings that have been assigned by users to each item. 
+
+In \cite{Argwal-fDLA} a method based on LDA is proposed to produce personalized recommendations.
+However, fLDA takes into account much more information about the user, i.e. age, 
+gender, zipcode, etc. We are going to use a simpler model, which relies on
+much less personal information. We will be using only the ratings 
+that have been given by the users to specific items.
+
+A LDA-based probabilistic matrix factorization models is proposed in
+\cite{conf/icdm/ShanB10}, however instead of using discrete distribution
+for generating ratings, it has placed a Gaussian distribution over the user's
+ratings. In our investigation we hope to relax this assumption and look into
+models that are not necessarily Gaussian.
+
+\acrfull{hpf} \cite{gopalan2013scalable} is a recent \gls{pmf} technique that
+extends the Gamma-Poisson (GaP) model proposed by \cite{canny2004gap}.
+In addition to \gls{hpf}, the authors of \cite{gopalan2013scalable} also
+proposed \gls{bpf}, which sets the rate parameter for the Gamama distributions for
+all users and items. It is believed that Poisson factorization better captures
+preferences in \gls{cf} tasks. This is proven empirically, as \gls{hpf} and \gls{bpf} perform better than \gls{lda} across a variety of \gls{cf} tasks, including movie recommendation \cite{gopalan2013scalable}.
+
 
 \section{Latent Dirichlet Allocation}
 
