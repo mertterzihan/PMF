@@ -123,6 +123,49 @@ preferences in \gls{cf} tasks. This is proven empirically, as \gls{hpf} and \gls
 
 
 \section{Latent Dirichlet Allocation}
+\gls{lda} \cite{lda} is an example of topic models, where a corpus of documents is 
+clustered based on the words that each document has. Each document has its own 
+topic distribution that might be interpreted as which topic this particular 
+document belongs to as a probability vector. Moreover, each topic has a word 
+distribution that represents the probability that given a topic, the probability 
+of word to occur. For each word in this document, a topic is sampled from the topic 
+distribution, and given the topic a word is sampled from the word-topic 
+distribution. \gls{lda} is a popular and successful model to cluster documents, 
+and we wanted to see if it performs similarly on movie datasets, where ratings 
+are produced instead of words. Below is the graphical model for extended 
+\gls{lda}: 
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=.4\textwidth]{E-LDA.png}
+    \caption{Graphical Model for Extended LDA}
+    \label{fig:plot1}
+  \end{center}
+\end{figure}
+
+The random variables follow the below distributions:
+\begin{align*}
+  &\theta_j \sim Dir(\alpha)\\
+  &z_{ji} \sim Cat(\theta_j)\\
+  &\phi_t \sim Dir(\beta)\\
+  &x_{ji} \sim Cat(\phi_{z_{ji}}) \\
+  &\kappa_{jt} \sim Dir(\gamma)\\
+  &r_{ji} \sim Cat(\kappa_{z_{ji},j})
+\end{align*}
+
+According to the above model, each topic has a distribution over movies ($\phi$) 
+and each user has a distribution over topics ($\theta$). For each movie that a 
+specific user has rated, a topic ($z_{ji}$) is sampled from $\theta_j$. Using 
+this topic, a movie (observed data) is generated as $x_ji$ from topic-movie 
+distribution, $\phi$. Until this point, the proposed model is similar to regular 
+\gls{lda}. However, we have added a new random variable, $\kappa$, to model the 
+ratings that are assigned by users to movies. Every user has a rating 
+distribution for each topic. This parameter can be thought as the rating 
+preference of the user for the topic. Since our ratings are integers from 1 to 
+5, each $\kappa_{jt}$ is a vector of size 5. Following this way, given topic 
+assignment for a movie, a rating, $r_{ji}$, can be assigned using $\kappa$. 
+
+\subsection{Collapsed Gibbs Sampler for Extended LDA}
+
 
 \section{Bayesian Poisson Factorization}
 
