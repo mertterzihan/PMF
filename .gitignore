@@ -9,7 +9,7 @@
 ml-100k/
 *.pyc
 *.txt
-*.png
+Code/*.png
 logs
 figs
 *.npz
