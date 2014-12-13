@@ -169,15 +169,9 @@ assignment for a movie, a rating, $r_{ji}$, can be assigned using $\kappa$.
 \subsection{Collapsed Gibbs Sampler for Extended LDA}
 
 \section{\acrlong{bpf}}
-\acrlong{bpf} is a particular model belonging to the more general class of \gls{pf} models. Similar to \gls{lda}, \gls{pf} algorithms are probabilistic models where each item $i$ is represented by $K$ latent topics, and each user $u$ can also be represented by their preferences over these latent topics \citep{gopalan2013scalable}.
+\acrlong{bpf} is a particular model belonging to the more general class of \gls{pf} models. Similar to \gls{lda}, \gls{pf} algorithms are probabilistic models where each item $i$ is represented by $K$ latent topics, and each user $u$ can also be represented by their preferences over these latent topics. In \citep{gopalan2013scalable} two main advantages of the \gls{pf} methods are mentioned. One that is particularly notable is that these methods better capture consumption data, a conjecture that has been reinforced by our own empirical results. To explain this, the authors write that the model can be thought of as allotting a budget to users that they are allowed to spend on items that interest them. Classic \gls{pmf} techniques tend to overestimate the users' overall budget, leading to an overweighting of the zeros.
 
-\begin{align*}
-	\xi_u &\sim \mathrm{Gamma}\left( a', \frac{a'}{b'} \right) \\
-	\theta_{uk} &\sim \mathrm{Gamma}\left( a, \xi_u \right) \\
-	\eta_i &\sim \mathrm{Gamma}\left( c', \frac{c'}{d'} \right) \\
-	\beta_{ik} &\sim \mathrm{Gamma}\left( c, \eta_i \right) \\
-	y_{ui} &\sim \mathrm{Poisson}\left( \theta^\top_u \beta_i \right )
-\end{align*}
+\subsection{\acrlong{bpf} Model}
 
 \begin{figure}[h]
 \begin{center}
@@ -187,6 +181,20 @@ assignment for a movie, a rating, $r_{ji}$, can be assigned using $\kappa$.
 \label{fig:bpf-model}
 \end{figure}
 
+The random variables introduced in Figure \ref{fig:bpf-model} are distributed as follows:
+\begin{align*}
+	\xi_u &\sim \mathrm{Gamma}\left( a', \frac{a'}{b'} \right) \\
+	\theta_{uk} &\sim \mathrm{Gamma}\left( a, \xi_u \right) \\
+	\eta_i &\sim \mathrm{Gamma}\left( c', \frac{c'}{d'} \right) \\
+	\beta_{ik} &\sim \mathrm{Gamma}\left( c, \eta_i \right) \\
+	y_{ui} &\sim \mathrm{Poisson}\left( \theta^\top_u \beta_i \right )
+\end{align*}
+Where $\xi_u$ is user $u$'s prior over latent topics, $\theta_{uk}$ is user $u$'s preference for topic $k$, $\eta_i$ is item $i$'s prior over latent topics, $\beta_{ik}$ is item $i$'s ``attribute" for topic $k$, and $y_{ui}$ is the distribution over rating for user $u$ and item $i$. The variables $a$, $a'$, $b'$, $c$, $c'$, $d'$, are all fixed hyper-parameters. 
+
+\subsection{Gibbs Sampler for \acrlong{bpf}}
+\begin{align*}
+	\theta_{uk} \mid \beta, \xi, z, y \sim \mathrm{Gamma}\left(a + \sum_i z_{uik}, \xi_u + \sum_i \beta_{ik} \right)
+\end{align*}
 \section{Results}
 
 \section{Conclusions}
