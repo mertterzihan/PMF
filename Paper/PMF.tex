@@ -19,6 +19,8 @@
 \newacronym{bpf}{BPF}{Bayesian Poisson Factorization}
 \newacronym{hpf}{HPF}{Hierarchical Poisson Factorization}
 \newacronym{cf}{CF}{Collaborative Filtering}
+\newacronym{svd}{SVD}{Singular Value Decomposition}
+\newacronym{mcmc}{MCMC}{Markov Chain Monte Carlo}
 
 \title{Probabilistic Matrix Factorization}
 
@@ -59,6 +61,34 @@ This is an abstract.
 \end{abstract}
 
 \section{Introduction}
+\Gls{pmf} is an approximate way to factorize a matrix. In another way, product 
+of the matrices that were produced by factorization is an approximation of the 
+original matrix. This set of algorithms utilize probabilistic modeling to tackle 
+the problem of decomposing matrices. For datasets that are big enough, the 
+deterministic methods (i.e \Gls{svd}) could be infeasible to apply. \Gls{pmf} 
+models can be learned by EM, \Gls{mcmc}, or as it has been proposed with recent 
+research, Variational methods. 
+
+One application of \Gls{pmf} is recommendation systems. Recommendation systems 
+aim to produce recommendations to users based on their previous choices and/or 
+their demographic information. The interactions between users and items can be 
+represented in matrix format, where cell $u,i$ corresponds to the relationship 
+between user $u$ and item $i$. The user preferences can be modeled with some 
+latent factors. By decomposing the user-item matrix into a product of two 
+matrices, we can learn the factors that determine the users' decisions and thus 
+cluster users and movies based on these factors. Moreover, artificial 
+recommendations can be easily produced with generative models. 
+
+The goal of this paper is to investigate different methods to tackle \Gls{pmf} 
+problem especially on movie recommendations, where the interactions between 
+users and movies are the ratings that are assigned by users to some movies. Note 
+that the corresponding matrix can be sparse, thus making deterministic methods 
+inapplicable. The paper is organized as follows: in section 2, we review the 
+previous methods that were presented. In section 3, we present an extended 
+version of \Gls{lda} model to use ratings as observations instead of bag-of-words 
+model. In section 4, we introduce a Gibbs sampler to learn a \Gls{bpf} model. 
+The results that have been obtained by learning these two models on 
+\textit{MovieLens} dataset, are shared in section 5.
 
 \section{Related Work}
 
