@@ -1,6 +1,5 @@
 from parseMovies import parseMovies
 import numpy as np
-import sys
 import argparse
 
 

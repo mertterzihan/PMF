@@ -14,6 +14,7 @@
 % Use these acronyms instead of writing PMF or Probabilistic Matrix Factorization
 % They take care of doing Probabilistic Matrix Factorization (PMF) the first
 % time it is mentioned, etc...
+\glsdisablehyper
 \newacronym{pmf}{PMF}{Probabilistic Matrix Factorization}
 \newacronym{lda}{LDA}{Latent Dirichlet Allocation}
 \newacronym{bpf}{BPF}{Bayesian Poisson Factorization}
@@ -21,6 +22,7 @@
 \newacronym{cf}{CF}{Collaborative Filtering}
 \newacronym{svd}{SVD}{Singular Value Decomposition}
 \newacronym{mcmc}{MCMC}{Markov Chain Monte Carlo}
+\newacronym{pf}{PF}{Poisson Factorization}
 
 \title{Probabilistic Matrix Factorization}
 
@@ -122,9 +124,26 @@ all users and items. It is believed that Poisson factorization better captures
 preferences in \gls{cf} tasks. This is proven empirically, as \gls{hpf} and \gls{bpf} perform better than \gls{lda} across a variety of \gls{cf} tasks, including movie recommendation \cite{gopalan2013scalable}.
 
 
-\section{Latent Dirichlet Allocation}
+\section{\acrlong{lda}}
 
-\section{Bayesian Poisson Factorization}
+\section{\acrlong{bpf}}
+\acrlong{bpf} is a particular model belonging to the more general class of \gls{pf} models. Similar to \gls{lda}, \gls{pf} algorithms are probabilistic models where each item $i$ is represented by $K$ latent topics, and each user $u$ can also be represented by their preferences over these latent topics \citep{gopalan2013scalable}.
+
+\begin{align*}
+	\xi_u &\sim \mathrm{Gamma}\left( a', \frac{a'}{b'} \right) \\
+	\theta_{uk} &\sim \mathrm{Gamma}\left( a, \xi_u \right) \\
+	\eta_i &\sim \mathrm{Gamma}\left( c', \frac{c'}{d'} \right) \\
+	\beta_{ik} &\sim \mathrm{Gamma}\left( c, \eta_i \right) \\
+	y_{ui} &\sim \mathrm{Poisson}\left( \theta^\top_u \beta_i \right )
+\end{align*}
+
+\begin{figure}[h]
+\begin{center}
+	\includegraphics[scale=0.25]{bpf.png}
+\end{center}
+\caption{\acrlong{bpf} plate diagram}
+\label{fig:bpf-model}
+\end{figure}
 
 \section{Results}
 
