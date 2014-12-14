@@ -189,11 +189,21 @@ The random variables introduced in Figure \ref{fig:bpf-model} are distributed as
 	\beta_{ik} &\sim \mathrm{Gamma}\left( c, \eta_i \right) \\
 	y_{ui} &\sim \mathrm{Poisson}\left( \theta^\top_u \beta_i \right )
 \end{align*}
-Where $\xi_u$ is user $u$'s prior over latent topics, $\theta_{uk}$ is user $u$'s preference for topic $k$, $\eta_i$ is item $i$'s prior over latent topics, $\beta_{ik}$ is item $i$'s ``attribute" for topic $k$, and $y_{ui}$ is the distribution over rating for user $u$ and item $i$. The variables $a$, $a'$, $b'$, $c$, $c'$, $d'$, are all fixed hyper-parameters. 
+Where $\xi_u$ is user $u$'s prior over latent topics, which we think of as user
+activity, and $\theta_{uk}$ is user $u$'s preference for topic $k$. $\eta_i$ is
+item $i$'s prior over latent topics, which is qualitatively the item's popularity,
+and $\beta_{ik}$ is item $i$'s ``attribute" for topic $k$. Finally, $y_{ui}$ is
+the rating user $u$ gives item $i$. The variables $a$, $a'$,
+$b'$, $c$, $c'$, $d'$, are all fixed hyper-parameters. 
 
 \subsection{Gibbs Sampler for \acrlong{bpf}}
+Before using \gls{bpf} to infer latent topics or perform recommendations we most solve the posterior distributions for these latent topics over user preferences and item attributes. To accomplish this, we will be using a Gibbs sampler to sample from the (computationally intractable) distributions over $\theta$, $\beta$, $\xi$, $\eta$, and $y$. However, as in \cite{gopalan2013scalable}, we will add a set of auxiliary variables $z_{uik} \sim \mathrm{Poisson} \left ( \theta_{uk} \beta{ik} \right )$ to aid in the derivation of the sampler update formulas. Each $z_{uik}$ is the contribution of topic $k$ to the total rating $y_{ui}$. Because the sum of Poisson random variables is also Poisson, this definition $y_{ui} = \sum_k z_{uik}$ does not violate our original assumptions.
 \begin{align*}
-	\theta_{uk} \mid \beta, \xi, z, y \sim \mathrm{Gamma}\left(a + \sum_i z_{uik}, \xi_u + \sum_i \beta_{ik} \right)
+	\theta_{uk} \mid \beta, \xi, z, y &\sim \mathrm{Gamma}\left(a + \sum_i z_{uik}, \xi_u + \sum_i \beta_{ik} \right) \\
+	\beta_{ik} \mid \theta, \eta, z, y &\sim \mathrm{Gamma}\left (a + \sum_u z_{uik}, \eta_i + \sum_u \theta_{uk} \right ) \\
+	\xi_u \mid \theta &\sim \mathrm{Gamma}\left (a' + Ka, b' + \sum_k \theta_{uk} \right ) \\
+	\eta_i \mid \beta &\sim \mathrm{Gamma} \left (c' + Kc, d' + \sum_k \beta_{ik} \right ) \\
+	z_{ui} \mid \beta, \theta, y &\sim \mathrm{Mult} \left (y_{ui}, \frac{\theta_u \beta_i}{\sum_k \theta_{uk} \beta_{uk}} \right )
 \end{align*}
 \section{Results}
 
