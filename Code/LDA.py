@@ -267,11 +267,6 @@ class GibbsSampler(object):
 if __name__ == "__main__":
     numTopics = int(sys.argv[1])
     numIters = int(sys.argv[2])
-    alpha = 0.1
-    beta = 0.01
-    gamma = 0.9
-    sampler = GibbsSampler(numTopics, alpha, beta, gamma)
-
     burn_in = float(sys.argv[3])
     thinning = int(sys.argv[4])
 
@@ -293,6 +288,7 @@ if __name__ == "__main__":
         print "Using default value for gamma = 0.9"
         gamma = 0.9
 
+    sampler = GibbsSampler(numTopics, alpha, beta, gamma)
     sampler.run(numIters, burn_in, thinning)
     # sampler.genMostLikelyMovies()
     # sampler.visualizePCA()
