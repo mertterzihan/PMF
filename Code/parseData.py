@@ -1,5 +1,7 @@
 import numpy as np
+import random
 
+NUM_REVIEWS = 100000
 
 def parseData():
     with open("../ml-100k/u.data") as f:
@@ -10,6 +12,7 @@ def parseData():
 
 
 def create_user_movie_matrix():
+    """ DEPRECATED """
     info = getMeta()
     user_movies = np.zeros((info["users"], info["movies"]),
                            dtype=np.uint8)
@@ -29,6 +32,28 @@ def getMeta():
 
     return info
 
+
+def get_split_review_mats():
+    random.seed(0)
+    info = getMeta()
+    train = np.zeros((info["users"], info["movies"]),
+                     dtype=np.uint8)
+    test = np.zeros((info["users"], info["movies"]),
+                    dtype=np.uint8)
+
+    data_iter = parseData()
+    count = 0
+
+    for user, movie, rating in data_iter:
+        test[user, movie] = rating
+        count += 1
+        if count > NUM_REVIEWS * 0.2:
+            break
+
+    for user, movie, rating in data_iter:
+        train[uesr, movie] = rating
+
+    return train, test
 
 if __name__ == '__main__':
     create_user_movie_matrix()

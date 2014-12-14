@@ -1,6 +1,6 @@
 import numpy as np
 from parseMovies import parseMovies
-from parseData import create_user_movie_matrix
+from parseData import get_split_review_mats
 from parseData import getMeta
 from random import randint, shuffle, sample
 from itertools import izip, product
@@ -40,7 +40,7 @@ class GibbsSampler(object):
 
         self.info = getMeta()
 
-        self.user_movies = create_user_movie_matrix()
+        self.user_movies, _ = get_split_review_mats()
         user_indices, movie_indices = self.user_movies.nonzero()
         self.user_movie_indices = zip(user_indices, movie_indices)
 

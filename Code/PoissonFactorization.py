@@ -1,7 +1,7 @@
 import numpy as np
 from random import shuffle
 from itertools import product
-from parseData import create_user_movie_matrix, getMeta
+from parseData import get_split_review_mats, getMeta
 from scipy.stats import poisson
 from scipy.stats import gamma as gammafun
 import sys
@@ -159,7 +159,7 @@ def main():
     burn_in = float(sys.argv[3])
     thinning = int(sys.argv[4])
 
-    ratings = create_user_movie_matrix()
+    ratings, _ = get_split_review_mats()
     bpf = BayesianPoissonFactorization(0.3, 0.3, 1.0, 0.3, 0.3, 1.0, topics,
                                        ratings)
     bpf.sample(total_iters, burn_in, thinning)
