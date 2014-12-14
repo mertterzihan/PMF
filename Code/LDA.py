@@ -288,6 +288,10 @@ if __name__ == "__main__":
         print "Using default value for gamma = 0.9"
         gamma = 0.9
 
+    with open("result_lda/desc.txt", "w") as f:
+        f.write("topics: %d\niters: %d\nburn in: %.4f\nthinning: %d\nalpha: %.4f\nbeta: %.4f\ngamma: %.4f"
+                % (numTopics, numIters, burn_in, thinning, alpha, beta, gamma))
+
     sampler = GibbsSampler(numTopics, alpha, beta, gamma)
     sampler.run(numIters, burn_in, thinning)
     # sampler.genMostLikelyMovies()

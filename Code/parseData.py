@@ -51,7 +51,7 @@ def get_split_review_mats():
             break
 
     for user, movie, rating in data_iter:
-        train[uesr, movie] = rating
+        train[user, movie] = rating
 
     return train, test
 
