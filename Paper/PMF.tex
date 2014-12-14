@@ -167,6 +167,7 @@ preference of the user for the topic. Since our ratings are integers from 1 to
 assignment for a movie, a rating, $r_{ji}$, can be assigned using $\kappa$. 
 
 \subsection{Collapsed Gibbs Sampler for Extended LDA}
+\label{sec:elda-sampler}
 
 \section{\acrlong{bpf}}
 \acrlong{bpf} is a particular model belonging to the more general class of \gls{pf} models. Similar to \gls{lda}, \gls{pf} algorithms are probabilistic models where each item $i$ is represented by $K$ latent topics, and each user $u$ can also be represented by their preferences over these latent topics. In \citep{gopalan2013scalable} two main advantages of the \gls{pf} methods are mentioned. One that is particularly notable is that these methods better capture consumption data, a conjecture that has been reinforced by our own empirical results. To explain this, the authors write that the model can be thought of as allotting a budget to users that they are allowed to spend on items that interest them. Classic \gls{pmf} techniques tend to overestimate the users' overall budget, leading to an overweighting of the zeros.
@@ -205,6 +206,8 @@ Before using \gls{bpf} to infer latent topics or perform recommendations we most
 	\eta_i \mid \beta &\sim \mathrm{Gamma} \left (c' + Kc, d' + \sum_k \beta_{ik} \right ) \\
 	z_{ui} \mid \beta, \theta, y &\sim \mathrm{Mult} \left (y_{ui}, \frac{\theta_u \beta_i}{\sum_k \theta_{uk} \beta_{uk}} \right )
 \end{align*}
+
+Similarly to the Gibbs sampler used for \gls{lda} (see Section \ref{sec:elda-sampler}), a burn-in rate of $0.1$ was used (the first $0.1$ iterations were discarded) and a thining rate of $5$ was used (only every fifth iteration was recorded).
 \section{Results}
 
 \section{Conclusions}
