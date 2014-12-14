@@ -166,8 +166,33 @@ preference of the user for the topic. Since our ratings are integers from 1 to
 5, each $\kappa_{jt}$ is a vector of size 5. Following this way, given topic 
 assignment for a movie, a rating, $r_{ji}$, can be assigned using $\kappa$. 
 
-\subsection{Collapsed Gibbs Sampler for Extended LDA}
 \label{sec:elda-sampler}
+\subsection{Collapsed Gibbs Sampler for Extended \gls{lda}}
+We have developed a collapsed Gibbs sampler based on the collapsed Gibbs sampler 
+proposed in \cite{steyvers2007probabilistic}. With the collapsed Gibbs sampler, 
+we will integrate over $\theta$, $\phi$ and $\kappa$, and we will sample just
+$z_{ji}$'s. Below is the derivation of collapsed Gibbs sampler for extended 
+\gls{lda}:
+\begin{align*}
+  p(z_{ji},x,r,z_{\backslash ji}) \propto 
+  \int_{\phi} p(x_{ji}|z_{ji},\phi)p(\phi_{z_{ji}}|\beta)d\phi
+  &\times \int_{\kappa} p(r_{ji}|z_{ji},\kappa_{j})p(\kappa_{jz_{ji}}|\gamma) d\kappa
+  \\
+  &\times \int{\theta} p(z_{ji}|\theta_{j})p(\theta_j|\alpha) d\theta
+\end{align*}
+Since we have Dirichlet and Categorical distributions, due to conjugacy we end 
+up with the below equations:
+\begin{align*}
+  &\int_{\phi} p(x_{ji}|z_{ji},\phi)p(\phi_{z_{ji}}|\beta)d\phi = \frac{C_{m,t}^{MT}+\beta}{\sum_m C_{m,t}^{MT}+M\beta} 
+  \\
+  &\int_{\kappa} p(r_{ji}|z_{ji},\kappa_{j})p(\kappa_{jz_{ji}}|\gamma) d\kappa = \frac{C_{u,t,r}^{UTR}+\gamma}{\sum_t C_{u,t,r}^{UTR}+T\gamma} 
+  \\
+  &\int{\theta} p(z_{ji}|\theta_{j})p(\theta_j|\alpha) d\alpha = \frac{C_{u,t}^UT+\alpha}{\sum_t C_{u,t}^{UT}+T\alpha}
+\end{align*}
+As noted in \cite{steyvers2007probabilistic}, $C$'s are count matrices. $C_{m,t}^{MT}$ 
+is the total count of times that movie m has been assigned to topic t, $C_{u,t,r}^{UTR}$ 
+is the total number of times that user u has given rating r to topic t, and $C_{u,t}^UT$ 
+is the number of times that user u has rated a movie from topic t. 
 
 \section{\acrlong{bpf}}
 \acrlong{bpf} is a particular model belonging to the more general class of \gls{pf} models. Similar to \gls{lda}, \gls{pf} algorithms are probabilistic models where each item $i$ is represented by $K$ latent topics, and each user $u$ can also be represented by their preferences over these latent topics. In \citep{gopalan2013scalable} two main advantages of the \gls{pf} methods are mentioned. One that is particularly notable is that these methods better capture consumption data, a conjecture that has been reinforced by our own empirical results. To explain this, the authors write that the model can be thought of as allotting a budget to users that they are allowed to spend on items that interest them. Classic \gls{pmf} techniques tend to overestimate the users' overall budget, leading to an overweighting of the zeros.
