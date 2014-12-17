@@ -282,6 +282,22 @@ On the other hand, \gls{lda} does not perform nearly as well as \gls{bpf} does i
 \end{table}
 
 \section{Conclusions}
+In this report, we have presented two models to tackle probabilistic matrix 
+factorization and movie recommendation problems: extended \gls{lda} and 
+\gls{bpf}. Extended \gls{lda} is a model based on \gls{lda} which also includes 
+an additional parameter to capture the rates given by users to movies. We have 
+also derived a collapsed Gibbs sampler for extended \gls{lda} to infer the hidden 
+variables. As shown in the experiments section, this model didn't perform well 
+due to some reasons that are discussed in the next section including possible 
+ways to fix them. 
+
+On the other hand, \gls{bpf} has performed well on MovieLens dataset and 
+captured some topics that contains movies that are apparently connected to each 
+other. It has been shown in \cite{gopalan2013scalable} that \gls{bpf} performs 
+well on movie dataset (they used Netflix dataset instead of MovieLens). They 
+have shown that \gls{bpf} outperforms Non-negative Matrix Factorization, 
+\gls{lda}, and Probabilistic Matrix Factorization methods on predictive 
+performance. 
 
 \section{Future Remarks}
 We have observed that in LDA some popular movies appear in most of the topics with high probabilities. 
@@ -297,6 +313,11 @@ captured with a Poisson distribution.
 Additionally, introducing nonparametric version of extended LDA would avoid the 
 scientists to tune the number of topics. By using this nonparametric model, the 
 model can learn the number of topics (clusters) from the data by itself. 
+
+With \gls{bpf}, \cite{gopalan2013scalable} has also proposed a hierarchical 
+model of \gls{bpf}, \gls{hpf}. A future work would also include deriving a Gibbs 
+sampler for this particular model and comparing its performance to Variational 
+inference. 
 
 \bibliographystyle{plain}
 \bibliography{main}
