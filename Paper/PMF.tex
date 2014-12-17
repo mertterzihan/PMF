@@ -284,6 +284,19 @@ On the other hand, \gls{lda} does not perform nearly as well as \gls{bpf} does i
 \section{Conclusions}
 
 \section{Future Remarks}
+We have observed that in LDA some popular movies appear in most of the topics with high probabilities. 
+As a future work, we are thinking of introducing additional parameter on $\phi$ 
+to restrict the movies to belong to more than a fixed number of topics. 
+
+Another future work would include to place a Poisson distribution on ratings instead of 
+Categorical distribution, to obtain a smoother distribution of ratings. It can 
+be observed that if a user has a mean rating of 4 for a topic, then it is more 
+likely for he/she to assign a 3 or 5 then 1 or 2. This property can be best 
+captured with a Poisson distribution. 
+
+Additionally, introducing nonparametric version of extended LDA would avoid the 
+scientists to tune the number of topics. By using this nonparametric model, the 
+model can learn the number of topics (clusters) from the data by itself. 
 
 \bibliographystyle{plain}
 \bibliography{main}
