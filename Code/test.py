@@ -23,7 +23,7 @@ def top_recommendations_poisson():
             movie_ratings.append((movie, rating))
 
         movie_ratings = sorted(movie_ratings, key=lambda x: x[1])
-        top_movies_for_user = set(movie for movie, rating in movie_ratings[-20:])
+        top_movies_for_user = set(movie for movie, rating in movie_ratings[-1000:])
 
         user_precision = 0.0
         movies = reviews[user, :].nonzero()[0]
@@ -33,9 +33,63 @@ def top_recommendations_poisson():
                 user_precision += 1
         if len(movies) > 0:
             num_users += 1
-            print user_precision, len(movies)
+            precision += (user_precision / len(movies))
+
+    return precision / num_users
+
+
+def top_recommendations_lda():
+    params = get_best_params("lda")
+    info = getMeta()
+    phi = params["phi"]
+    kappa = params["kappa"]
+
+    reviews = get_test_reviews()
+    rating_values = np.asarray([0,1.0,2.0,3.0,4.0,5.0])
+    precision = 0.0
+    num_users = 0
+    for user in xrange(info["users"]):
+        movie_ratings = []
+        for movie in xrange(info["movies"]):
+            topic = np.argmax(phi[movie,:])
+            rating = np.dot(kappa[:,user,topic]/np.sum(kappa[:,user,topic]), rating_values)
+            movie_ratings.append((movie, rating))
+        movie_ratings = sorted(movie_ratings, key=lambda x: x[1])
+        top_movies_for_user = set(movie for movie, rating in movie_ratings[-1000:])
+
+        user_precision = 0.0
+        movies = reviews[user, :].nonzero()[0]
+        for movie in movies:
+            if movie in top_movies_for_user:
+                user_precision += 1
+        if len(movies) > 0:
+            num_users += 1
             precision += (user_precision / len(movies))
     return precision / num_users
+
+
+def top_recommendations_iid():
+    info = getMeta()
+    train, reviews = get_split_review_mats()
+
+    avg_ratings = train.sum(axis=0) / (train != 0).sum(axis=0).astype(np.float)
+    top_movies = sorted(((movie, rating) for movie, rating in enumerate(avg_ratings)),
+                        key=lambda x: x[1])
+    top_movies = set(movie for movie, rating in top_movies[-1000:])
+
+    precision = 0.0
+    num_users = 0
+    for user in xrange(info["users"]):
+        movies = reviews[user, :].nonzero()[0]
+        user_precision = 0.0
+        for movie in movies:
+            if movie in top_movies:
+                user_precision += 1
+        if len(movies) > 0:
+            num_users += 1
+            precision += (user_precision / len(movies))
+        return precision / num_users
+
 
 def test_poisson():
     params = get_best_params("poisson")
@@ -101,5 +155,7 @@ def main():
 
 if __name__ == '__main__':
     print top_recommendations_poisson()
+    print top_recommendations_lda()
+    print top_recommendations_iid()
     # print test_iid_users()
     # print test_poisson()

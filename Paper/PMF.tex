@@ -281,6 +281,21 @@ On the other hand, \gls{lda} does not perform nearly as well as \gls{bpf} does i
     \caption {Sample topics for \gls{lda}}
 \end{table}
 
+We also conducted experiments that test the accuracy of the recommendation system. We split the data and used $80\%$ of the reviews in training, and the other $20\%$ for testing. We used a common metric in recommendation systems, checking the coverage of the top-$M$ generated recommendations. We generated $M$ recommendations for each user using the \gls{lda} and the \gls{bpf} models and report the percentage of the test recommendations that are covered by this set in Table \ref{table:top-m}.We also used a baseline, which treated each user as an independent identically distributed random variable. For this baseline, the MLE estimates were used in the recommendation phase. 
+\begin{table}[h]
+    \centering
+    \begin{tabular}{c|ccc} \toprule
+    \textbf{M}    & \textbf{IID}    & \textbf{LDA}    & \textbf{BPF}    \\ \midrule
+    20   & 0.0    & 0.0288 & 0.1409 \\
+    100  & 0.0    & 0.0683 & 0.4789 \\
+    1000 & 0.0730 & 0.2372 & 0.9681 \\
+    \end{tabular}
+    \caption {Percent of test ratings covered by the top-$M$ recommendations}
+    \label{table:top-m}
+\end{table}
+
+Not surprisingly, the \gls{lda} model outperforms treating users independently. However, it falls far short of the \gls{bpf}. The \gls{bpf} model outperforms both the \gls{lda} and IID models. These results are what we expect, because (empirically) \gls{pf} is better at modelling consumer behavior. 
+
 \section{Conclusions}
 In this report, we have presented two models to tackle probabilistic matrix 
 factorization and movie recommendation problems: extended \gls{lda} and 
