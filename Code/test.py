@@ -76,6 +76,24 @@ def test_iid_users():
 
     return math.sqrt(rmse / count)
 
+def test_lda():
+    params = get_best_params("lda")
+    info = getMeta()
+    phi = params["phi"]
+    kappa = params["kappa"]
+
+    reviews = get_test_reviews()
+    rmse = 0.0
+    count = 0
+
+    rating_values = np.asarray([0,1.0,2.0,3.0,4.0,5.0])
+    for user, movie in izip(*reviews.nonzero()):
+        topic = np.argmax(phi[movie,:])
+        estimated_rating = np.dot(kappa[:,user,topic]/np.sum(kappa[:,user,topic]), rating_values)
+        true_rating = reviews[user, movie]
+        rmse += (true_rating - estimated_rating) ** 2
+        count += 1
+    return math.sqrt(rmse / count)
 
 def main():
     pass
