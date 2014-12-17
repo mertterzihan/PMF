@@ -1,10 +1,41 @@
-from parseData import get_test_reviews, get_split_review_mats
+from parseData import get_test_reviews, get_split_review_mats, getMeta
 import numpy as np
 import sys
 from itertools import izip
 import math
 from most_likely_movies import get_best_params
 
+
+def top_recommendations_poisson():
+    params = get_best_params("poisson")
+    info = getMeta()
+    beta = params["beta"]
+    theta = params["theta"]
+
+    reviews = get_test_reviews()
+
+    precision = 0.0
+    num_users = 0
+    for user in xrange(info["users"]):
+        movie_ratings = []
+        for movie in xrange(info["movies"]):
+            rating = np.dot(theta[user, :], beta[movie, :])
+            movie_ratings.append((movie, rating))
+
+        movie_ratings = sorted(movie_ratings, key=lambda x: x[1])
+        top_movies_for_user = set(movie for movie, rating in movie_ratings[-20:])
+
+        user_precision = 0.0
+        movies = reviews[user, :].nonzero()[0]
+
+        for movie in movies:
+            if movie in top_movies_for_user:
+                user_precision += 1
+        if len(movies) > 0:
+            num_users += 1
+            print user_precision, len(movies)
+            precision += (user_precision / len(movies))
+    return precision / num_users
 
 def test_poisson():
     params = get_best_params("poisson")
@@ -18,11 +49,11 @@ def test_poisson():
     for user, movie in izip(*reviews.nonzero()):
         true_rating = reviews[user, movie]
         mean_rating = np.dot(theta[user, :], beta[movie, :])
-        mean_rating = max(5, mean_rating + 1)
+        mean_rating = max(1, min(5, mean_rating + 1))
         rmse += (true_rating - mean_rating) ** 2
         rmses.append((true_rating - mean_rating) ** 2)
         count += 1
-    print max(rmses)
+
     return math.sqrt(rmse / count)
 
 
@@ -35,10 +66,12 @@ def test_iid_users():
     for user, movie in izip(*test.nonzero()):
         true_rating = test[user, movie]
         predicted = avg_ratings[movie]
+
         if np.isnan(predicted):
-            rmse += 25
-        else:
-            rmse += (predicted - true_rating) ** 2
+            # The movie wasn't rated by any users in the training data set
+            continue
+
+        rmse += (predicted - true_rating) ** 2
         count += 1
 
     return math.sqrt(rmse / count)
@@ -49,4 +82,6 @@ def main():
 
 
 if __name__ == '__main__':
-    print test_iid_users()
+    print top_recommendations_poisson()
+    # print test_iid_users()
+    # print test_poisson()
