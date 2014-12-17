@@ -8,6 +8,17 @@ def topic_distribution(fname, collection_name):
     return npfile[collection_name].mean(axis=0)
 
 
+def get_best_params(model_name):
+    params_file = np.load("result_%s/result.npz" % model_name)
+    ll = np.load("result_%s/ll.npy" % model_name)
+
+    max_idx = ll.argmax()
+    params = {}
+    for param_collection in params_file:
+        params[param_collection.split("_")[0]] = params_file[param_collection][max_idx]
+    return params
+
+
 def print_most_likely_movies(fname, collection_name):
         topic_dist = topic_distribution(fname, collection_name)
         movies = parseMovies()
